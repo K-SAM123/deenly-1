@@ -1,0 +1,82 @@
+{
+  "name": "Habit",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de l'habitude"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description de l'habitude"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "custom"
+      ],
+      "default": "daily",
+      "description": "Fr\u00e9quence de l'habitude"
+    },
+    "custom_days": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Jours personnalis\u00e9s (lundi, mardi, etc.)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "spiritual",
+        "health",
+        "study",
+        "work",
+        "personal"
+      ],
+      "default": "personal",
+      "description": "Cat\u00e9gorie de l'habitude"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Ic\u00f4ne de l'habitude"
+    },
+    "color": {
+      "type": "string",
+      "description": "Couleur de l'habitude"
+    },
+    "streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Nombre de jours cons\u00e9cutifs"
+    },
+    "completions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "completed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "Historique des compl\u00e9tions"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si l'habitude est active"
+    }
+  },
+  "required": [
+    "title",
+    "frequency"
+  ]
+}
