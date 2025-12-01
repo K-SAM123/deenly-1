@@ -1,0 +1,63 @@
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ListTodo, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+
+const quadrantConfig = {
+  urgent_important: {
+    label: "Urgent & Important",
+    icon: AlertCircle,
+    color: "bg-red-100 text-red-700 border-red-300",
+  },
+  urgent_not_important: {
+    label: "Urgent",
+    icon: Clock,
+    color: "bg-orange-100 text-orange-700 border-orange-300",
+  },
+  not_urgent_important: {
+    label: "Important",
+    icon: CheckCircle2,
+    color: "bg-blue-100 text-blue-700 border-blue-300",
+  },
+  not_urgent_not_important: {
+    label: "À éviter",
+    icon: Clock,
+    color: "bg-gray-100 text-gray-700 border-gray-300",
+  },
+};
+
+export default function TodayTasksList({ tasks, loading }) {
+  const urgentImportantTasks = tasks.filter(t => t.eisenhower_quadrant === 'urgent_important');
+  const otherTasks = tasks.filter(t => t.eisenhower_quadrant !== 'urgent_important').slice(0, 3);
+
+  return (
+    <Card className="border-none shadow-lg">
+      <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-white">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-blue-900">
+            <ListTodo className="w-5 h-5" />
+            Tâches du jour
+          </CardTitle>
+          <Link to={createPageUrl("Matrix")}>
+            <Badge variant="outline" className="cursor-pointer hover:bg-blue-50">
+              Voir la matrice →
+            </Badge>
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        ) : tasks.length === 0 ? (
+          <div className="text-center py-8">
+            <ListTodo className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">Aucune tâche pour aujourd'hui</p>
+          </div>
+        ) : (
+ 
