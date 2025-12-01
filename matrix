@@ -1,0 +1,139 @@
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Grid3x3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+import MatrixBoard from "../components/matrix/MatrixBoard";
+import AddTaskDialog from "../components/matrix/AddTaskDialog";
+
+export default function MatrixPage() {
+  const queryClient = useQueryClient();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [selectedQuadrant, setSelectedQuadrant] = useState(null);
+
+  const { data: tasks = [], isLoading } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: () => base44.entities.Task.list('-created_date'),
+  });
+
+  const createTaskMutation = useMutation({
+    mutationFn: (taskData) => base44.entities.Task.create(taskData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      setShowAddDialog(false);
+      setEditingTask(null);
+      setSelectedQuadrant(null);
+    },
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      setShowAddDialog(false);
+      setEditingTask(null);
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: (id) => base44.entities.Task.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
+  const handleAddTask = (quadrant) => {
+    setSelectedQuadrant(quadrant);
+    setEditingTask(null);
+    setShowAddDialog(true);
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setSelectedQuadrant(task.eisenhower_quadrant);
+    setShowAddDialog(true);
+  };
+
+  const handleSaveTask = (taskData) => {
+    if (editingTask) {
+      updateTaskMutation.mutate({
+        id: editingTask.id,
+        data: taskData,
+      });
+    } else {
+      createTaskMutation.mutate({
+        ...taskData,
+        eisenhower_quadrant: selectedQuadrant,
+      });
+    }
+  };
+
+  const handleMoveTask = (taskId, newQuadrant) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      updateTaskMutation.mutate({
+        id: taskId,
+        data: { eisenhower_quadrant: newQuadrant },
+      });
+    }
+  };
+
+  const handleDeleteTask = (taskId) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette tâche ?")) {
+      deleteTaskMutation.mutate(taskId);
+    }
+  };
+
+  const handleToggleStatus = (task) => {
+    const newStatus = task.status === 'done' ? 'todo' : 'done';
+    updateTaskMutation.mutate({
+      id: task.id,
+      data: { 
+        status: newStatus,
+        completed_at: newStatus === 'done' ? new Date().toISOString() : null,
+      },
+    });
+  };
+
+  return (
+    <div className="h-screen overflow-hidden p-2 md:p-4 bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+      <div className="max-w-7xl mx-auto h-full flex flex-col">
+        {/* Header - Ultra compact */}
+        <div className="flex items-center justify-center gap-2 mb-2 md:mb-4 flex-shrink-0">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+            <Grid3x3 className="w-4 h-4 md:w-5 md:h-5 text-white" />
+          </div>
+          <h1 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-purple-700 to-purple-600 bg-clip-text text-transparent">
+            Matrice d'Eisenhower
+          </h1>
+        </div>
+
+
+
+        {/* Matrix Board - Grille 2x2 sans scroll */}
+        <div className="flex-1 min-h-0">
+          <MatrixBoard
+          tasks={tasks}
+          isLoading={isLoading}
+          onAddTask={handleAddTask}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          onMoveTask={handleMoveTask}
+          onToggleStatus={handleToggleStatus}
+        />
+        </div>
+
+        {/* Event Dialog */}
+        <AddTaskDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          task={editingTask}
+          quadrant={selectedQuadrant}
+          onSave={handleSaveTask}
+        />
+      </div>
+    </div>
+  );
+}
