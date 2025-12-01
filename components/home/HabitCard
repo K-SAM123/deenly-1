@@ -1,0 +1,63 @@
+import React from "react";
+import { CheckCircle2, Circle } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+const categoryColors = {
+  spiritual: "from-emerald-500 to-emerald-600",
+  health: "from-red-500 to-red-600",
+  study: "from-blue-500 to-blue-600",
+  work: "from-purple-500 to-purple-600",
+  personal: "from-amber-500 to-amber-600",
+};
+
+export default function HabitCard({ habit, onToggle }) {
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const completion = habit.completions?.find(c => c.date === today);
+  const isCompleted = completion?.completed || false;
+
+  return (
+    <div
+      onClick={() => onToggle(!isCompleted)}
+      className={cn(
+        "flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300",
+        isCompleted 
+          ? "bg-emerald-50 border-emerald-300 shadow-sm" 
+          : "bg-white border-gray-200 hover:border-emerald-200 hover:shadow-md"
+      )}
+    >
+      <div className="relative">
+        {isCompleted ? (
+          <CheckCircle2 className="w-8 h-8 text-emerald-600" strokeWidth={2.5} />
+        ) : (
+          <Circle className="w-8 h-8 text-gray-300" strokeWidth={2} />
+        )}
+      </div>
+      
+      <div className="flex-1">
+        <h4 className={cn(
+          "font-semibold",
+          isCompleted ? "text-emerald-900 line-through" : "text-gray-900"
+        )}>
+          {habit.title}
+        </h4>
+        {habit.description && (
+          <p className="text-sm text-gray-600 mt-0.5">{habit.description}</p>
+        )}
+        <div className="flex items-center gap-2 mt-2">
+          <span className={cn(
+            "text-xs px-2 py-1 rounded-full",
+            `bg-gradient-to-r ${categoryColors[habit.category] || categoryColors.personal} text-white`
+          )}>
+            {habit.category}
+          </span>
+          {habit.streak > 0 && (
+            <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700 font-medium">
+              🔥 {habit.streak} jours
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
