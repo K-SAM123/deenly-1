@@ -1,0 +1,344 @@
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Play, Pause, RotateCcw, Settings, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+const PRESETS = [
+  { name: "Classique", work: 25, break: 5 },
+  { name: "Court", work: 15, break: 3 },
+  { name: "Long", work: 50, break: 10 },
+];
+
+export default function PomodoroTimer({ activeSession, onStartSession, onCompleteSession }) {
+  const [mode, setMode] = useState("work"); // 'work' or 'break'
+  const [timeLeft, setTimeLeft] = useState(25 * 60); // En secondes
+  const [isRunning, setIsRunning] = useState(false);
+  const [workDuration, setWorkDuration] = useState(25);
+  const [breakDuration, setBreakDuration] = useState(5);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [autoStartBreak, setAutoStartBreak] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    let interval = null;
+    
+    if (isRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(time => time - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && isRunning) {
+      // Timer terminé
+      handleTimerComplete();
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRunning, timeLeft]);
+
+  const handleTimerComplete = () => {
+    setIsRunning(false);
+    
+    if (mode === "work") {
+      // Travail terminé, passer à la pause
+      setMode("break");
+      setTimeLeft(breakDuration * 60);
+      
+      if (autoStartBreak) {
+        setIsRunning(true);
+      }
+      
+      // Notification
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Pomodoro terminé !", {
+          body: "Temps de faire une pause ! 🎉",
+        });
+      }
+    } else {
+      // Pause terminée
+      setMode("work");
+      setTimeLeft(workDuration * 60);
+      
+      if (activeSession) {
+        onCompleteSession(activeSession.id);
+      }
+      
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Pause terminée !", {
+          body: "Prêt à reprendre le travail ? 💪",
+        });
+      }
+    }
+  };
+
+  const handleStart = async () => {
+    if (!hasStarted) {
+      // Première fois qu'on démarre
+      const session = await onStartSession({
+        taskTitle: taskTitle || "Session de concentration",
+        workDuration,
+        breakDuration,
+      });
+      setHasStarted(true);
+      
+      // Demander permission notifications
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+    
+    setIsRunning(true);
+  };
+
+  const handlePause = () => {
+    setIsRunning(false);
+  };
+
+  const handleReset = () => {
+    setIsRunning(false);
+    setMode("work");
+    setTimeLeft(workDuration * 60);
+    setHasStarted(false);
+    setTaskTitle("");
+  };
+
+  const applyPreset = (preset) => {
+    setWorkDuration(preset.work);
+    setBreakDuration(preset.break);
+    if (!isRunning) {
+      setTimeLeft(preset.work * 60);
+    }
+  };
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const progress = mode === "work" 
+    ? ((workDuration * 60 - timeLeft) / (workDuration * 60)) * 100
+    : ((breakDuration * 60 - timeLeft) / (breakDuration * 60)) * 100;
+
+  return (
+    <div className="space-y-4 md:space-y-6">
+      {/* Mode indicator */}
+      <div className="text-center">
+        <div className={`inline-block px-4 md:px-6 py-2 md:py-3 rounded-full text-sm md:text-base font-bold ${
+          mode === "work" 
+            ? "bg-red-100 text-red-700" 
+            : "bg-green-100 text-green-700"
+        }`}>
+          {mode === "work" ? "🎯 Concentration" : "☕ Pause"}
+        </div>
+      </div>
+
+      {/* Flip Clock Display */}
+      <div className="flex justify-center items-center gap-2 md:gap-4">
+        <div className="relative">
+          <div className="flip-card">
+            <div className={`flip-card-inner ${mode === "work" ? "bg-red-600" : "bg-green-600"}`}>
+              <span className="text-5xl md:text-8xl font-bold text-white tabular-nums">
+                {String(minutes).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+        </div>
+        <span className="text-4xl md:text-7xl font-bold text-gray-400">:</span>
+        <div className="relative">
+          <div className="flip-card">
+            <div className={`flip-card-inner ${mode === "work" ? "bg-red-600" : "bg-green-600"}`}>
+              <span className="text-5xl md:text-8xl font-bold text-white tabular-nums">
+                {String(seconds).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2 md:h-3 overflow-hidden">
+        <div 
+          className={`h-full transition-all duration-300 ${
+            mode === "work" ? "bg-red-600" : "bg-green-600"
+          }`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Controls */}
+      <div className="flex justify-center items-center gap-3 md:gap-4">
+        {!isRunning ? (
+          <Button
+            size="lg"
+            onClick={handleStart}
+            className="h-12 md:h-16 px-6 md:px-8 text-base md:text-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg"
+          >
+            <Play className="w-5 h-5 md:w-6 md:h-6 mr-2" />
+            {hasStarted ? "Reprendre" : "Démarrer"}
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            onClick={handlePause}
+            variant="outline"
+            className="h-12 md:h-16 px-6 md:px-8 text-base md:text-lg border-2"
+          >
+            <Pause className="w-5 h-5 md:w-6 md:h-6 mr-2" />
+            Pause
+          </Button>
+        )}
+        
+        <Button
+          size="lg"
+          onClick={handleReset}
+          variant="outline"
+          className="h-12 md:h-16 px-4 md:px-6"
+        >
+          <RotateCcw className="w-5 h-5 md:w-6 md:h-6" />
+        </Button>
+
+        <Button
+          size="lg"
+          onClick={() => setShowSettings(true)}
+          variant="outline"
+          className="h-12 md:h-16 px-4 md:px-6"
+        >
+          <Settings className="w-5 h-5 md:w-6 md:h-6" />
+        </Button>
+      </div>
+
+      {/* Presets - Mobile friendly */}
+      {!hasStarted && (
+        <div className="grid grid-cols-3 gap-2 md:gap-3 mt-4 md:mt-6">
+          {PRESETS.map(preset => (
+            <Button
+              key={preset.name}
+              onClick={() => applyPreset(preset)}
+              variant="outline"
+              className="h-auto py-2 md:py-3 flex flex-col gap-1"
+            >
+              <span className="text-xs md:text-sm font-semibold">{preset.name}</span>
+              <span className="text-[10px] md:text-xs text-gray-500">
+                {preset.work}m / {preset.break}m
+              </span>
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Paramètres Pomodoro</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 mt-4">
+            <div>
+              <Label htmlFor="task">Nom de la tâche (optionnel)</Label>
+              <Input
+                id="task"
+                placeholder="Ex: Étudier le Coran"
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                className="mt-2"
+                disabled={hasStarted}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="work">Durée travail (min)</Label>
+                <Input
+                  id="work"
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={workDuration}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    setWorkDuration(val);
+                    if (!isRunning && mode === "work") {
+                      setTimeLeft(val * 60);
+                    }
+                  }}
+                  className="mt-2"
+                  disabled={hasStarted}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="break">Durée pause (min)</Label>
+                <Input
+                  id="break"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={breakDuration}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    setBreakDuration(val);
+                    if (!isRunning && mode === "break") {
+                      setTimeLeft(val * 60);
+                    }
+                  }}
+                  className="mt-2"
+                  disabled={hasStarted}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div>
+                <Label htmlFor="auto-break" className="text-sm font-semibold">
+                  Démarrer pause automatiquement
+                </Label>
+                <p className="text-xs text-gray-500 mt-1">
+                  La pause démarre dès la fin du travail
+                </p>
+              </div>
+              <Switch
+                id="auto-break"
+                checked={autoStartBreak}
+                onCheckedChange={setAutoStartBreak}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end mt-6">
+            <Button onClick={() => setShowSettings(false)}>
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <style jsx>{`
+        .flip-card {
+          perspective: 1000px;
+        }
+        
+        .flip-card-inner {
+          position: relative;
+          padding: 1.5rem 2rem;
+          border-radius: 1rem;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          transition: transform 0.6s;
+        }
+        
+        @media (min-width: 768px) {
+          .flip-card-inner {
+            padding: 2rem 3rem;
+            border-radius: 1.5rem;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
