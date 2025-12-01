@@ -1,0 +1,79 @@
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, BookOpen, TrendingUp } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import SurahList from "./SurahList";
+import SurahReader from "./SurahReader";
+import QuranStats from "./QuranStats";
+
+export default function QuranSection() {
+  const [selectedSurah, setSelectedSurah] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeView, setActiveView] = useState("list");
+
+  const { data: progress = [] } = useQuery({
+    queryKey: ['quran-progress'],
+    queryFn: () => base44.entities.QuranProgress.list(),
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Card */}
+      <QuranStats progress={progress} />
+
+      {/* Main Content */}
+      <Card className="border-none shadow-xl">
+        <CardHeader className="border-b bg-gradient-to-r from-emerald-50 to-white">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-emerald-900">
+              <BookOpen className="w-5 h-5" />
+              {selectedSurah ? `Sourate ${selectedSurah.number}: ${selectedSurah.name}` : "Le Noble Qur'ān"}
+            </CardTitle>
+            {selectedSurah && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedSurah(null)}
+              >
+                Retour à la liste
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          {!selectedSurah ? (
+            <>
+              {/* Search Bar */}
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  placeholder="Rechercher une sourate ou un mot-clé..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-12 rounded-xl border-2 border-gray-200 focus:border-emerald-400"
+                />
+              </div>
+
+              {/* Surah List */}
+              <SurahList 
+                searchQuery={searchQuery}
+                progress={progress}
+                onSelectSurah={setSelectedSurah}
+              />
+            </>
+          ) : (
+            <SurahReader 
+              surah={selectedSurah}
+              progress={progress}
+            />
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
