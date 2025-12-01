@@ -1,0 +1,214 @@
+
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle2, Circle, Plus, Sun, Moon, Calendar as CalendarIcon, Target } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+import HabitCard from "../components/home/HabitCard";
+import TodayTasksList from "../components/home/TodayTasksList";
+import QuickActions from "../components/home/QuickActions";
+
+export default function HomePage() {
+  const queryClient = useQueryClient();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const { data: habits = [], isLoading: habitsLoading } = useQuery({
+    queryKey: ['habits'],
+    queryFn: () => base44.entities.Habit.filter({ active: true }),
+  });
+
+  const { data: tasks = [], isLoading: tasksLoading } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: () => base44.entities.Task.filter({ status: 'todo' }),
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['today-events'],
+    queryFn: async () => {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      return base44.entities.CalendarEvent.list();
+    },
+  });
+
+  const todayEvents = events.filter(event => {
+    const eventDate = format(new Date(event.start_time), 'yyyy-MM-dd');
+    const today = format(new Date(), 'yyyy-MM-dd');
+    return eventDate === today;
+  });
+
+  const updateHabitCompletion = useMutation({
+    mutationFn: async ({ habitId, completed }) => {
+      const habit = habits.find(h => h.id === habitId);
+      const today = format(new Date(), 'yyyy-MM-dd');
+      
+      const completions = habit.completions || [];
+      const existingIndex = completions.findIndex(c => c.date === today);
+      
+      if (existingIndex >= 0) {
+        completions[existingIndex].completed = completed;
+      } else {
+        completions.push({ date: today, completed });
+      }
+      
+      return base44.entities.Habit.update(habitId, { completions });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    },
+  });
+
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return { text: "☀️ As-salamu alaykum", icon: Sun };
+    if (hour < 18) return { text: "🌤️ Bon après-midi", icon: Sun };
+    return { text: "🌙 Bonne soirée", icon: Moon };
+  };
+
+  const greeting = getGreeting();
+
+  const todayHabits = habits.filter(habit => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const dayName = format(new Date(), 'EEEE', { locale: fr }).toLowerCase();
+    
+    if (habit.frequency === 'daily') return true;
+    if (habit.frequency === 'weekly' && habit.custom_days?.includes(dayName)) return true;
+    // Add more frequency logic as needed
+    return false;
+  });
+
+  const completedHabitsToday = todayHabits.filter(habit => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const completion = habit.completions?.find(c => c.date === today);
+    return completion?.completed;
+  }).length;
+
+  const urgentTasks = tasks.filter(t => t.eisenhower_quadrant === 'urgent_important');
+
+  return (
+    <div className="min-h-screen p-3 md:p-8">
+      <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
+        {/* Greeting Header - Compact pour mobile */}
+        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl md:rounded-3xl p-4 md:p-8 text-white shadow-xl">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div>
+              <h1 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">{greeting.text}</h1>
+              <p className="text-emerald-100 text-sm md:text-lg">
+                {format(currentTime, "EEEE d MMMM yyyy", { locale: fr })}
+              </p>
+              <p className="text-emerald-200 text-xs md:text-sm mt-1">
+                {format(currentTime, "HH:mm:ss")}
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <greeting.icon className="w-20 h-20 text-emerald-200 opacity-50" />
+            </div>
+          </div>
+          
+          {/* Quick Stats - Compact */}
+          <div className="grid grid-cols-3 gap-2 md:gap-4 mt-4 md:mt-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl p-2 md:p-4">
+              <p className="text-emerald-200 text-[10px] md:text-sm mb-0.5 md:mb-1">Habitudes</p>
+              <p className="text-lg md:text-2xl font-bold">{completedHabitsToday}/{todayHabits.length}</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl p-2 md:p-4">
+              <p className="text-emerald-200 text-[10px] md:text-sm mb-0.5 md:mb-1">Tâches urgentes</p>
+              <p className="text-lg md:text-2xl font-bold">{urgentTasks.length}</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl md:rounded-2xl p-2 md:p-4">
+              <p className="text-emerald-200 text-[10px] md:text-sm mb-0.5 md:mb-1">Événements</p>
+              <p className="text-lg md:text-2xl font-bold">{todayEvents.length}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions - Compact */}
+        <QuickActions />
+
+        {/* Habitudes du jour - Compact */}
+        <Card className="border-none shadow-lg">
+          <CardHeader className="border-b bg-gradient-to-r from-emerald-50 to-white p-3 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-emerald-900 text-base md:text-lg">
+              <Target className="w-4 h-4 md:w-5 md:h-5" />
+              Habitudes du jour
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 md:p-6">
+            {habitsLoading ? (
+              <div className="space-y-2 md:space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-14 md:h-16 bg-gray-100 rounded-xl md:rounded-2xl animate-pulse" />
+                ))}
+              </div>
+            ) : todayHabits.length === 0 ? (
+              <div className="text-center py-6 md:py-8">
+                <Circle className="w-10 h-10 md:w-12 md:h-12 text-gray-300 mx-auto mb-2 md:mb-3" />
+                <p className="text-sm md:text-base text-gray-500">Aucune habitude pour aujourd'hui</p>
+              </div>
+            ) : (
+              <div className="grid gap-2 md:gap-3">
+                {todayHabits.map(habit => (
+                  <HabitCard
+                    key={habit.id}
+                    habit={habit}
+                    onToggle={(completed) => 
+                      updateHabitCompletion.mutate({ habitId: habit.id, completed })
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tâches du jour - Compact */}
+        <TodayTasksList tasks={tasks} loading={tasksLoading} />
+
+        {/* Événements du jour - Compact */}
+        <Card className="border-none shadow-lg">
+          <CardHeader className="border-b bg-gradient-to-r from-amber-50 to-white p-3 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-amber-900 text-base md:text-lg">
+              <CalendarIcon className="w-4 h-4 md:w-5 md:h-5" />
+              Événements du jour
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 md:p-6">
+            {todayEvents.length === 0 ? (
+              <div className="text-center py-6 md:py-8">
+                <CalendarIcon className="w-10 h-10 md:w-12 md:h-12 text-gray-300 mx-auto mb-2 md:mb-3" />
+                <p className="text-sm md:text-base text-gray-500">Aucun événement prévu</p>
+              </div>
+            ) : (
+              <div className="space-y-2 md:space-y-3">
+                {todayEvents.map(event => (
+                  <div
+                    key={event.id}
+                    className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl md:rounded-2xl bg-gradient-to-r from-amber-50 to-white border border-amber-100"
+                  >
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                      <CalendarIcon className="w-5 h-5 md:w-6 md:h-6 text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 text-sm md:text-base truncate">{event.title}</h4>
+                      <p className="text-xs md:text-sm text-gray-600">
+                        {format(new Date(event.start_time), "HH:mm")} - {format(new Date(event.end_time), "HH:mm")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
