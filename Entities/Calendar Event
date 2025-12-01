@@ -1,0 +1,67 @@
+{
+  "name": "CalendarEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de l'\u00e9v\u00e9nement"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description de l'\u00e9v\u00e9nement"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Heure de d\u00e9but"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Heure de fin"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "spiritual",
+        "work",
+        "study",
+        "personal",
+        "prayer",
+        "islamic_date"
+      ],
+      "default": "personal",
+      "description": "Cat\u00e9gorie de l'\u00e9v\u00e9nement"
+    },
+    "color": {
+      "type": "string",
+      "description": "Couleur de l'\u00e9v\u00e9nement"
+    },
+    "is_all_day": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si l'\u00e9v\u00e9nement dure toute la journ\u00e9e"
+    },
+    "is_recurring": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si l'\u00e9v\u00e9nement est r\u00e9current"
+    },
+    "recurrence_pattern": {
+      "type": "string",
+      "description": "Pattern de r\u00e9currence"
+    },
+    "location": {
+      "type": "string",
+      "description": "Lieu de l'\u00e9v\u00e9nement"
+    },
+    "reminder_minutes": {
+      "type": "number",
+      "description": "Rappel avant l'\u00e9v\u00e9nement (en minutes)"
+    }
+  },
+  "required": [
+    "title",
+    "start_time"
+  ]
+}
