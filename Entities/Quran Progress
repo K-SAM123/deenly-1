@@ -1,0 +1,47 @@
+{
+  "name": "QuranProgress",
+  "type": "object",
+  "properties": {
+    "surah_number": {
+      "type": "number",
+      "description": "Num\u00e9ro de la sourate (1-114)"
+    },
+    "surah_name": {
+      "type": "string",
+      "description": "Nom de la sourate"
+    },
+    "ayah_number": {
+      "type": "number",
+      "description": "Num\u00e9ro du verset"
+    },
+    "progress_type": {
+      "type": "string",
+      "enum": [
+        "memorized",
+        "read",
+        "reviewed"
+      ],
+      "description": "Type de progression"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notes personnelles"
+    },
+    "mastery_level": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Niveau de ma\u00eetrise (1-5)"
+    },
+    "last_reviewed": {
+      "type": "string",
+      "format": "date",
+      "description": "Derni\u00e8re r\u00e9vision"
+    }
+  },
+  "required": [
+    "surah_number",
+    "ayah_number",
+    "progress_type"
+  ]
+}
