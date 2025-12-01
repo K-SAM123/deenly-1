@@ -1,0 +1,54 @@
+import React, { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, Heart, Sparkles } from "lucide-react";
+
+import QuranSection from "../components/islam/QuranSection";
+import AdhkarSection from "../components/islam/AdhkarSection";
+
+export default function IslamPage() {
+  const [activeTab, setActiveTab] = useState("quran");
+
+  return (
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+            <BookOpen className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-700 to-emerald-600 bg-clip-text text-transparent mb-2">
+            Islam
+          </h1>
+          <p className="text-gray-600">Connectez-vous à votre foi</p>
+        </div>
+
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 bg-white shadow-lg rounded-2xl p-2 border border-gray-200">
+            <TabsTrigger 
+              value="quran" 
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-emerald-700 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Qur'ān
+            </TabsTrigger>
+            <TabsTrigger 
+              value="adhkar"
+              className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            >
+              <Heart className="w-4 h-4 mr-2" />
+              Adhkār & Duʿāʾ
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="quran" className="space-y-6">
+            <QuranSection />
+          </TabsContent>
+
+          <TabsContent value="adhkar" className="space-y-6">
+            <AdhkarSection />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
