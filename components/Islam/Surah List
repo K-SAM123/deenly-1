@@ -68,4 +68,146 @@ const SURAHS = [
   { number: 62, name: "Al-Jumu'a", arabic: "الجمعة", verses: 11, revelation: "Médine" },
   { number: 63, name: "Al-Munafiqun", arabic: "المنافقون", verses: 11, revelation: "Médine" },
   { number: 64, name: "At-Taghabun", arabic: "التغابن", verses: 18, revelation: "Médine" },
- 
+  { number: 65, name: "At-Talaq", arabic: "الطلاق", verses: 12, revelation: "Médine" },
+  { number: 66, name: "At-Tahrim", arabic: "التحريم", verses: 12, revelation: "Médine" },
+  { number: 67, name: "Al-Mulk", arabic: "الملك", verses: 30, revelation: "Mecque" },
+  { number: 68, name: "Al-Qalam", arabic: "القلم", verses: 52, revelation: "Mecque" },
+  { number: 69, name: "Al-Haqqa", arabic: "الحاقة", verses: 52, revelation: "Mecque" },
+  { number: 70, name: "Al-Ma'arij", arabic: "المعارج", verses: 44, revelation: "Mecque" },
+  { number: 71, name: "Nuh", arabic: "نوح", verses: 28, revelation: "Mecque" },
+  { number: 72, name: "Al-Jinn", arabic: "الجن", verses: 28, revelation: "Mecque" },
+  { number: 73, name: "Al-Muzzammil", arabic: "المزمل", verses: 20, revelation: "Mecque" },
+  { number: 74, name: "Al-Muddaththir", arabic: "المدثر", verses: 56, revelation: "Mecque" },
+  { number: 75, name: "Al-Qiyama", arabic: "القيامة", verses: 40, revelation: "Mecque" },
+  { number: 76, name: "Al-Insan", arabic: "الانسان", verses: 31, revelation: "Médine" },
+  { number: 77, name: "Al-Mursalat", arabic: "المرسلات", verses: 50, revelation: "Mecque" },
+  { number: 78, name: "An-Naba", arabic: "النبإ", verses: 40, revelation: "Mecque" },
+  { number: 79, name: "An-Nazi'at", arabic: "النازعات", verses: 46, revelation: "Mecque" },
+  { number: 80, name: "'Abasa", arabic: "عبس", verses: 42, revelation: "Mecque" },
+  { number: 81, name: "At-Takwir", arabic: "التكوير", verses: 29, revelation: "Mecque" },
+  { number: 82, name: "Al-Infitar", arabic: "الإنفطار", verses: 19, revelation: "Mecque" },
+  { number: 83, name: "Al-Mutaffifin", arabic: "المطففين", verses: 36, revelation: "Mecque" },
+  { number: 84, name: "Al-Inshiqaq", arabic: "الإنشقاق", verses: 25, revelation: "Mecque" },
+  { number: 85, name: "Al-Buruj", arabic: "البروج", verses: 22, revelation: "Mecque" },
+  { number: 86, name: "At-Tariq", arabic: "الطارق", verses: 17, revelation: "Mecque" },
+  { number: 87, name: "Al-A'la", arabic: "الأعلى", verses: 19, revelation: "Mecque" },
+  { number: 88, name: "Al-Ghashiya", arabic: "الغاشية", verses: 26, revelation: "Mecque" },
+  { number: 89, name: "Al-Fajr", arabic: "الفجر", verses: 30, revelation: "Mecque" },
+  { number: 90, name: "Al-Balad", arabic: "البلد", verses: 20, revelation: "Mecque" },
+  { number: 91, name: "Ash-Shams", arabic: "الشمس", verses: 15, revelation: "Mecque" },
+  { number: 92, name: "Al-Layl", arabic: "الليل", verses: 21, revelation: "Mecque" },
+  { number: 93, name: "Ad-Duha", arabic: "الضحى", verses: 11, revelation: "Mecque" },
+  { number: 94, name: "Ash-Sharh", arabic: "الشرح", verses: 8, revelation: "Mecque" },
+  { number: 95, name: "At-Tin", arabic: "التين", verses: 8, revelation: "Mecque" },
+  { number: 96, name: "Al-'Alaq", arabic: "العلق", verses: 19, revelation: "Mecque" },
+  { number: 97, name: "Al-Qadr", arabic: "القدر", verses: 5, revelation: "Mecque" },
+  { number: 98, name: "Al-Bayyina", arabic: "البينة", verses: 8, revelation: "Médine" },
+  { number: 99, name: "Az-Zalzala", arabic: "الزلزلة", verses: 8, revelation: "Médine" },
+  { number: 100, name: "Al-'Adiyat", arabic: "العاديات", verses: 11, revelation: "Mecque" },
+  { number: 101, name: "Al-Qari'a", arabic: "القارعة", verses: 11, revelation: "Mecque" },
+  { number: 102, name: "At-Takathur", arabic: "التكاثر", verses: 8, revelation: "Mecque" },
+  { number: 103, name: "Al-'Asr", arabic: "العصر", verses: 3, revelation: "Mecque" },
+  { number: 104, name: "Al-Humaza", arabic: "الهمزة", verses: 9, revelation: "Mecque" },
+  { number: 105, name: "Al-Fil", arabic: "الفيل", verses: 5, revelation: "Mecque" },
+  { number: 106, name: "Quraysh", arabic: "قريش", verses: 4, revelation: "Mecque" },
+  { number: 107, name: "Al-Ma'un", arabic: "الماعون", verses: 7, revelation: "Mecque" },
+  { number: 108, name: "Al-Kawthar", arabic: "الكوثر", verses: 3, revelation: "Mecque" },
+  { number: 109, name: "Al-Kafirun", arabic: "الكافرون", verses: 6, revelation: "Mecque" },
+  { number: 110, name: "An-Nasr", arabic: "النصر", verses: 3, revelation: "Médine" },
+  { number: 111, name: "Al-Masad", arabic: "المسد", verses: 5, revelation: "Mecque" },
+  { number: 112, name: "Al-Ikhlas", arabic: "الإخلاص", verses: 4, revelation: "Mecque" },
+  { number: 113, name: "Al-Falaq", arabic: "الفلق", verses: 5, revelation: "Mecque" },
+  { number: 114, name: "An-Nas", arabic: "الناس", verses: 6, revelation: "Mecque" },
+];
+
+export default function SurahList({ searchQuery, progress, onSelectSurah }) {
+  const filteredSurahs = SURAHS.filter(surah => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      surah.name.toLowerCase().includes(query) ||
+      surah.arabic.includes(query) ||
+      surah.number.toString().includes(query)
+    );
+  });
+
+  const getMemorizedCount = (surahNumber) => {
+    return progress.filter(
+      p => p.surah_number === surahNumber && p.progress_type === 'memorized'
+    ).length;
+  };
+
+  return (
+    <div className="grid gap-3">
+      {filteredSurahs.length === 0 ? (
+        <div className="text-center py-12">
+          <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500">Aucune sourate trouvée</p>
+        </div>
+      ) : (
+        filteredSurahs.map((surah) => {
+          const memorizedCount = getMemorizedCount(surah.number);
+          const memorizedPercentage = (memorizedCount / surah.verses) * 100;
+
+          return (
+            <Card
+              key={surah.number}
+              onClick={() => onSelectSurah(surah)}
+              className="p-4 cursor-pointer hover:shadow-lg hover:border-emerald-300 transition-all duration-200 border-2 border-gray-200 bg-white"
+            >
+              <div className="flex items-center gap-4">
+                {/* Number Badge */}
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center text-white font-bold shadow-md flex-shrink-0">
+                  {surah.number}
+                </div>
+
+                {/* Surah Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">
+                        {surah.name}
+                      </h3>
+                      <p className="text-2xl font-arabic text-emerald-700 mb-1">
+                        {surah.arabic}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                    <span className="flex items-center gap-1">
+                      <BookOpen className="w-4 h-4" />
+                      {surah.verses} versets
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {surah.revelation}
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  {memorizedCount > 0 && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-emerald-700 font-semibold">
+                          🎯 Mémorisé : {memorizedCount}/{surah.verses}
+                        </span>
+                        <span className="text-emerald-600 font-bold">
+                          {Math.round(memorizedPercentage)}%
+                        </span>
+                      </div>
+                      <Progress 
+                        value={memorizedPercentage} 
+                        className="h-2 bg-emerald-100"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          );
+        })
+      )}
+    </div>
+  );
+}
