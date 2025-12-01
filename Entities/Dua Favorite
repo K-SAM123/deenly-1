@@ -1,0 +1,47 @@
+{
+  "name": "DuaFavorite",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre du du\u02bf\u0101\u02be"
+    },
+    "arabic_text": {
+      "type": "string",
+      "description": "Texte en arabe"
+    },
+    "transliteration": {
+      "type": "string",
+      "description": "Translitt\u00e9ration"
+    },
+    "translation": {
+      "type": "string",
+      "description": "Traduction fran\u00e7aise"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "evening",
+        "after_prayer",
+        "stress",
+        "illness",
+        "travel",
+        "sadness",
+        "success",
+        "gratitude",
+        "other"
+      ],
+      "default": "other",
+      "description": "Cat\u00e9gorie du du\u02bf\u0101\u02be"
+    },
+    "source": {
+      "type": "string",
+      "description": "Source (Qur'\u0101n, Hadith, etc.)"
+    },
+    "reference": {
+      "type": "string",
+      "description": "R\u00e9f\u00e9rence pr\u00e9cise"
+    },
+    "usage_count": {
+ 
