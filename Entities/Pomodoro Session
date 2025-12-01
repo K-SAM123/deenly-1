@@ -1,0 +1,50 @@
+{
+  "name": "PomodoroSession",
+  "type": "object",
+  "properties": {
+    "task_title": {
+      "type": "string",
+      "description": "Titre de la t\u00e2che travaill\u00e9e"
+    },
+    "work_duration": {
+      "type": "number",
+      "default": 25,
+      "description": "Dur\u00e9e de travail en minutes"
+    },
+    "break_duration": {
+      "type": "number",
+      "default": 5,
+      "description": "Dur\u00e9e de pause en minutes"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si la session a \u00e9t\u00e9 compl\u00e9t\u00e9e"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Heure de d\u00e9but"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Heure de fin"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "spiritual",
+        "work",
+        "study",
+        "personal"
+      ],
+      "default": "work",
+      "description": "Cat\u00e9gorie de la session"
+    }
+  },
+  "required": [
+    "task_title",
+    "work_duration"
+  ]
+}
