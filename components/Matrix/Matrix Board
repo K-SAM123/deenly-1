@@ -1,0 +1,183 @@
+import React from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, AlertCircle, Clock, Target, X } from "lucide-react";
+import TaskCard from "./TaskCard";
+
+const QUADRANTS = [
+  {
+    id: "urgent_important",
+    title: "Urgent & Important",
+    subtitle: "🔴 À FAIRE IMMÉDIATEMENT",
+    icon: AlertCircle,
+    color: "from-red-500 to-red-600",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-300",
+    textColor: "text-red-900",
+  },
+  {
+    id: "not_urgent_important",
+    title: "Important & Pas urgent",
+    subtitle: "🔵 À PLANIFIER",
+    icon: Target,
+    color: "from-blue-500 to-blue-600",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-300",
+    textColor: "text-blue-900",
+  },
+  {
+    id: "urgent_not_important",
+    title: "Urgent & Pas important",
+    subtitle: "🟡 À DÉLÉGUER",
+    icon: Clock,
+    color: "from-amber-500 to-amber-600",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-300",
+    textColor: "text-amber-900",
+  },
+  {
+    id: "not_urgent_not_important",
+    title: "Ni urgent ni important",
+    subtitle: "⚪ À ÉLIMINER",
+    icon: X,
+    color: "from-gray-500 to-gray-600",
+    bgColor: "bg-gray-50",
+    borderColor: "border-gray-300",
+    textColor: "text-gray-900",
+  },
+];
+
+export default function MatrixBoard({
+  tasks,
+  isLoading,
+  onAddTask,
+  onEditTask,
+  onDeleteTask,
+  onMoveTask,
+  onToggleStatus,
+}) {
+  const handleDragEnd = (result) => {
+    const { destination, draggableId } = result;
+
+    if (!destination) return;
+
+    const taskId = draggableId;
+    const newQuadrant = destination.droppableId;
+
+    onMoveTask(taskId, newQuadrant);
+  };
+
+  const getTasksByQuadrant = (quadrantId) => {
+    return tasks.filter(task => task.eisenhower_quadrant === quadrantId);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-2 md:gap-4 h-[calc(100vh-200px)] md:h-[calc(100vh-280px)]">
+        {QUADRANTS.map((quadrant) => (
+          <div key={quadrant.id} className={`${quadrant.bgColor} rounded-xl md:rounded-2xl border-2 ${quadrant.borderColor} animate-pulse`} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      {/* Grille 2x2 fixe - visible sans scroll */}
+      <div className="grid grid-cols-2 gap-2 md:gap-4 h-[calc(100vh-180px)] md:h-[calc(100vh-260px)]">
+        {QUADRANTS.map((quadrant) => {
+          const Icon = quadrant.icon;
+          const quadrantTasks = getTasksByQuadrant(quadrant.id);
+          const completedTasks = quadrantTasks.filter(t => t.status === 'done').length;
+
+          return (
+            <div
+              key={quadrant.id}
+              className={`${quadrant.bgColor} rounded-xl md:rounded-2xl border-2 ${quadrant.borderColor} shadow-lg overflow-hidden flex flex-col`}
+            >
+              {/* Header compact */}
+              <div className={`p-2 md:p-3 border-b ${quadrant.borderColor} flex-shrink-0`}>
+                <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
+                  <div className={`w-6 h-6 md:w-8 md:h-8 rounded-lg bg-gradient-to-br ${quadrant.color} flex items-center justify-center shadow`}>
+                    <Icon className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-[10px] md:text-sm font-bold ${quadrant.textColor} truncate`}>
+                      {quadrant.title}
+                    </h3>
+                    <p className="text-[8px] md:text-xs text-gray-600 hidden md:block">
+                      {quadrant.subtitle}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] md:text-xs text-gray-600">
+                    {quadrantTasks.length} tâche{quadrantTasks.length !== 1 ? 's' : ''}
+                    {completedTasks > 0 && (
+                      <span className="text-emerald-600 ml-1">✓{completedTasks}</span>
+                    )}
+                  </span>
+                  <button
+                    onClick={() => onAddTask(quadrant.id)}
+                    className={`w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br ${quadrant.color} flex items-center justify-center shadow hover:scale-110 transition-transform`}
+                  >
+                    <Plus className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Zone des tâches avec scroll interne */}
+              <Droppable droppableId={quadrant.id}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`flex-1 overflow-y-auto p-1.5 md:p-2 transition-colors ${
+                      snapshot.isDraggingOver ? 'bg-white/50' : ''
+                    }`}
+                  >
+                    <div className="space-y-1.5 md:space-y-2">
+                      {quadrantTasks.length === 0 ? (
+                        <div className="text-center py-4 md:py-6">
+                          <Icon className="w-8 h-8 md:w-10 md:h-10 text-gray-300 mx-auto mb-1" />
+                          <p className="text-[10px] md:text-xs text-gray-400">Aucune tâche</p>
+                        </div>
+                      ) : (
+                        quadrantTasks.map((task, index) => (
+                          <Draggable
+                            key={task.id}
+                            draggableId={task.id}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                              >
+                                <TaskCard
+                                  task={task}
+                                  onEdit={() => onEditTask(task)}
+                                  onDelete={() => onDeleteTask(task.id)}
+                                  onToggleStatus={() => onToggleStatus(task)}
+                                  isDragging={snapshot.isDragging}
+                                  compact={true}
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))
+                      )}
+                      {provided.placeholder}
+                    </div>
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          );
+        })}
+      </div>
+    </DragDropContext>
+  );
+}
