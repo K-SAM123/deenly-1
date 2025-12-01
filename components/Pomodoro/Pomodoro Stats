@@ -1,0 +1,115 @@
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { 
+  Timer, 
+  CheckCircle2, 
+  TrendingUp, 
+  Calendar,
+  Flame
+} from "lucide-react";
+import { format, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { fr } from "date-fns/locale";
+
+export default function PomodoroStats({ sessions }) {
+  const completedSessions = sessions.filter(s => s.completed);
+  
+  // Calculate total time (in hours)
+  const totalMinutes = completedSessions.reduce((sum, s) => sum + s.work_duration, 0);
+  const totalHours = (totalMinutes / 60).toFixed(1);
+
+  // Sessions this week
+  const now = new Date();
+  const weekStart = startOfWeek(now, { locale: fr });
+  const weekEnd = endOfWeek(now, { locale: fr });
+  
+  const sessionsThisWeek = completedSessions.filter(s => {
+    const sessionDate = new Date(s.created_date);
+    return isWithinInterval(sessionDate, { start: weekStart, end: weekEnd });
+  });
+
+  // Calculate streak (consecutive days with sessions)
+  const getStreak = () => {
+    if (completedSessions.length === 0) return 0;
+    
+    const sortedSessions = [...completedSessions].sort((a, b) => 
+      new Date(b.created_date).getTime() - new Date(a.created_date).getTime()
+    );
+    
+    let streak = 0;
+    let currentDate = format(new Date(), 'yyyy-MM-dd');
+    
+    for (let i = 0; i < 30; i++) {
+      const hasSession = sortedSessions.some(s => 
+        format(new Date(s.created_date), 'yyyy-MM-dd') === currentDate
+      );
+      
+      if (!hasSession) break;
+      streak++;
+      
+      const date = new Date(currentDate);
+      date.setDate(date.getDate() - 1);
+      currentDate = format(date, 'yyyy-MM-dd');
+    }
+    
+    return streak;
+  };
+
+  // Sessions today
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const sessionsToday = completedSessions.filter(s => 
+    format(new Date(s.created_date), 'yyyy-MM-dd') === today
+  );
+
+  const stats = [
+    {
+      title: "Sessions totales",
+      value: completedSessions.length,
+      icon: CheckCircle2,
+      color: "from-green-500 to-green-600",
+      subtext: `${totalHours}h de travail`,
+    },
+    {
+      title: "Cette semaine",
+      value: sessionsThisWeek.length,
+      icon: Calendar,
+      color: "from-blue-500 to-blue-600",
+      subtext: `${((sessionsThisWeek.reduce((sum, s) => sum + s.work_duration, 0)) / 60).toFixed(1)}h`,
+    },
+    {
+      title: "Aujourd'hui",
+      value: sessionsToday.length,
+      icon: Timer,
+      color: "from-purple-500 to-purple-600",
+      subtext: `${((sessionsToday.reduce((sum, s) => sum + s.work_duration, 0)) / 60).toFixed(1)}h de focus`,
+    },
+    {
+      title: "Série actuelle",
+      value: `${getStreak()} ${getStreak() === 1 ? 'jour' : 'jours'}`,
+      icon: Flame,
+      color: "from-orange-500 to-orange-600",
+      subtext: getStreak() > 0 ? "Continue comme ça ! 🔥" : "Commence aujourd'hui",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {stats.map((stat, index) => {
+        const Icon = stat.icon;
+        return (
+          <Card key={index} className="border-none shadow-lg overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
+                  <Icon className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
+              <p className="text-xs text-gray-600 mb-1">{stat.title}</p>
+              <p className="text-xs font-medium text-gray-500">{stat.subtext}</p>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
