@@ -1,0 +1,291 @@
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarIcon, Clock, MapPin, Trash2 } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+export default function EventDialog({ 
+  open, 
+  onOpenChange, 
+  event, 
+  selectedDate,
+  onSave,
+  onDelete 
+}) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    start_time: new Date(),
+    end_time: new Date(),
+    category: "personal",
+    location: "",
+    is_all_day: false,
+  });
+
+  useEffect(() => {
+    if (event) {
+      setFormData({
+        title: event.title || "",
+        description: event.description || "",
+        start_time: new Date(event.start_time),
+        end_time: new Date(event.end_time),
+        category: event.category || "personal",
+        location: event.location || "",
+        is_all_day: event.is_all_day || false,
+      });
+    } else if (selectedDate) {
+      const startTime = new Date(selectedDate);
+      startTime.setHours(9, 0, 0, 0);
+      const endTime = new Date(selectedDate);
+      endTime.setHours(10, 0, 0, 0);
+      
+      setFormData({
+        title: "",
+        description: "",
+        start_time: startTime,
+        end_time: endTime,
+        category: "personal",
+        location: "",
+        is_all_day: false,
+      });
+    }
+  }, [event, selectedDate, open]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim()) {
+      return;
+    }
+
+    onSave({
+      ...formData,
+      start_time: formData.start_time.toISOString(),
+      end_time: formData.end_time.toISOString(),
+    });
+  };
+
+  const handleTimeChange = (field, value) => {
+    const [hours, minutes] = value.split(':');
+    const newDate = new Date(formData[field]);
+    newDate.setHours(parseInt(hours), parseInt(minutes));
+    setFormData({ ...formData, [field]: newDate });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl">
+            {event ? "Modifier l'événement" : "Nouvel événement"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {/* Title */}
+          <div>
+            <Label htmlFor="title" className="text-sm font-semibold">
+              Titre *
+            </Label>
+            <Input
+              id="title"
+              placeholder="Ex: Réunion d'équipe"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="mt-2 h-11"
+              required
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <Label htmlFor="description" className="text-sm font-semibold">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              placeholder="Détails de l'événement..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="mt-2 h-24 resize-none"
+            />
+          </div>
+
+          {/* Date & Time */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-semibold">Date de début</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start mt-2 h-11">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(formData.start_time, "PP", { locale: fr })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.start_time}
+                    onSelect={(date) => {
+                      if (date) {
+                        const newStart = new Date(formData.start_time);
+                        newStart.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                        setFormData({ ...formData, start_time: newStart });
+                      }
+                    }}
+                    locale={fr}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold">Heure de début</Label>
+              <div className="relative mt-2">
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="time"
+                  value={format(formData.start_time, "HH:mm")}
+                  onChange={(e) => handleTimeChange('start_time', e.target.value)}
+                  className="pl-10 h-11"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-semibold">Date de fin</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start mt-2 h-11">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(formData.end_time, "PP", { locale: fr })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.end_time}
+                    onSelect={(date) => {
+                      if (date) {
+                        const newEnd = new Date(formData.end_time);
+                        newEnd.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                        setFormData({ ...formData, end_time: newEnd });
+                      }
+                    }}
+                    locale={fr}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold">Heure de fin</Label>
+              <div className="relative mt-2">
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="time"
+                  value={format(formData.end_time, "HH:mm")}
+                  onChange={(e) => handleTimeChange('end_time', e.target.value)}
+                  className="pl-10 h-11"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Category */}
+          <div>
+            <Label htmlFor="category" className="text-sm font-semibold">
+              Catégorie
+            </Label>
+            <Select
+              value={formData.category}
+              onValueChange={(value) => setFormData({ ...formData, category: value })}
+            >
+              <SelectTrigger className="mt-2 h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="spiritual">🕌 Spirituel</SelectItem>
+                <SelectItem value="work">💼 Travail</SelectItem>
+                <SelectItem value="study">📚 Étude</SelectItem>
+                <SelectItem value="personal">👤 Personnel</SelectItem>
+                <SelectItem value="prayer">🤲 Prière</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Location */}
+          <div>
+            <Label htmlFor="location" className="text-sm font-semibold">
+              Lieu
+            </Label>
+            <div className="relative mt-2">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                id="location"
+                placeholder="Ajouter un lieu"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="pl-10 h-11"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            {event && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => {
+                  onDelete(event.id);
+                  onOpenChange(false);
+                }}
+                className="mr-auto h-11"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Supprimer
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="h-11"
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              className="h-11 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800"
+            >
+              {event ? "Enregistrer" : "Créer l'événement"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
