@@ -1,0 +1,80 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de la t\u00e2che"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description d\u00e9taill\u00e9e"
+    },
+    "eisenhower_quadrant": {
+      "type": "string",
+      "enum": [
+        "urgent_important",
+        "urgent_not_important",
+        "not_urgent_important",
+        "not_urgent_not_important"
+      ],
+      "default": "not_urgent_important",
+      "description": "Quadrant de la matrice d'Eisenhower"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "in_progress",
+        "done"
+      ],
+      "default": "todo",
+      "description": "Statut de la t\u00e2che"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date d'\u00e9ch\u00e9ance"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "Priorit\u00e9"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "spiritual",
+        "work",
+        "study",
+        "personal",
+        "health"
+      ],
+      "default": "personal",
+      "description": "Cat\u00e9gorie de la t\u00e2che"
+    },
+    "is_recurring": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si la t\u00e2che est r\u00e9currente"
+    },
+    "recurrence_pattern": {
+      "type": "string",
+      "description": "Pattern de r\u00e9currence (daily, weekly, monthly)"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de compl\u00e9tion"
+    }
+  },
+  "required": [
+    "title",
+    "eisenhower_quadrant"
+  ]
+}
