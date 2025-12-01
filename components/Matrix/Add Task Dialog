@@ -1,0 +1,244 @@
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarIcon, X } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+const QUADRANT_INFO = {
+  urgent_important: {
+    name: "🔴 Urgent & Important",
+    description: "À faire immédiatement"
+  },
+  not_urgent_important: {
+    name: "🔵 Important & Pas urgent",
+    description: "À planifier"
+  },
+  urgent_not_important: {
+    name: "🟡 Urgent & Pas important",
+    description: "À déléguer"
+  },
+  not_urgent_not_important: {
+    name: "⚪ Ni urgent ni important",
+    description: "À éliminer"
+  },
+};
+
+export default function AddTaskDialog({ open, onOpenChange, task, quadrant, onSave }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    priority: "medium",
+    category: "personal",
+    due_date: null,
+    status: "todo",
+  });
+
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title || "",
+        description: task.description || "",
+        priority: task.priority || "medium",
+        category: task.category || "personal",
+        due_date: task.due_date ? new Date(task.due_date) : null,
+        status: task.status || "todo",
+      });
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        priority: "medium",
+        category: "personal",
+        due_date: null,
+        status: "todo",
+      });
+    }
+  }, [task, open]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim()) {
+      return;
+    }
+
+    onSave({
+      ...formData,
+      due_date: formData.due_date ? formData.due_date.toISOString() : null,
+    });
+  };
+
+  const quadrantInfo = quadrant ? QUADRANT_INFO[quadrant] : null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[550px]">
+        <DialogHeader>
+          <DialogTitle className="text-xl">
+            {task ? "Modifier la tâche" : "Nouvelle tâche"}
+          </DialogTitle>
+          {quadrantInfo && (
+            <div className="mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <p className="text-sm font-semibold text-purple-900">{quadrantInfo.name}</p>
+              <p className="text-xs text-purple-700 mt-0.5">{quadrantInfo.description}</p>
+            </div>
+          )}
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {/* Title */}
+          <div>
+            <Label htmlFor="title" className="text-sm font-semibold">
+              Titre de la tâche *
+            </Label>
+            <Input
+              id="title"
+              placeholder="Ex: Finaliser le rapport annuel"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="mt-2 h-11"
+              required
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <Label htmlFor="description" className="text-sm font-semibold">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              placeholder="Ajoutez plus de détails sur cette tâche..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="mt-2 h-24 resize-none"
+            />
+          </div>
+
+          {/* Category & Priority */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category" className="text-sm font-semibold">
+                Catégorie
+              </Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+              >
+                <SelectTrigger className="mt-2 h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spiritual">🕌 Spirituel</SelectItem>
+                  <SelectItem value="work">💼 Travail</SelectItem>
+                  <SelectItem value="study">📚 Étude</SelectItem>
+                  <SelectItem value="personal">👤 Personnel</SelectItem>
+                  <SelectItem value="health">❤️ Santé</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="priority" className="text-sm font-semibold">
+                Priorité
+              </Label>
+              <Select
+                value={formData.priority}
+                onValueChange={(value) => setFormData({ ...formData, priority: value })}
+              >
+                <SelectTrigger className="mt-2 h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Basse</SelectItem>
+                  <SelectItem value="medium">Moyenne</SelectItem>
+                  <SelectItem value="high">Haute</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Due Date */}
+          <div>
+            <Label className="text-sm font-semibold">
+              Date d'échéance
+            </Label>
+            <div className="flex gap-2 mt-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="flex-1 justify-start text-left h-11"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.due_date ? (
+                      format(formData.due_date, "PPP", { locale: fr })
+                    ) : (
+                      <span className="text-gray-500">Choisir une date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.due_date}
+                    onSelect={(date) => setFormData({ ...formData, due_date: date })}
+                    locale={fr}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {formData.due_date && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setFormData({ ...formData, due_date: null })}
+                  className="h-11"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="h-11"
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              className="h-11 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+            >
+              {task ? "Enregistrer les modifications" : "Créer la tâche"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
